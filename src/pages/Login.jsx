@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
+import { Button } from "../components/ui/button.jsx";
+import { Input } from "../components/ui/input.jsx";
+import { Label } from "../components/ui/label.jsx";
+import { toast } from "../components/ui/sonner.jsx";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -20,11 +24,13 @@ function Login() {
 
     // Demo login
     if (email === "admin@gmail.com" && password === "admin123") {
+      localStorage.setItem("isLoggedIn", "true");
       sessionStorage.setItem("isLoggedIn", "true");
-
+      toast("Login successful");
       navigate("/dashboard");
     } else {
       setError("Invalid email or password");
+      toast("Invalid email or password", "error");
     }
   };
 
@@ -36,8 +42,9 @@ function Login() {
 
         <form onSubmit={handleLogin}>
           <div className="form-group">
-            <label>Email</label>
-            <input
+            <Label htmlFor="login-email">Email</Label>
+            <Input
+              id="login-email"
               type="email"
               placeholder="Enter your email"
               value={email}
@@ -46,8 +53,9 @@ function Login() {
           </div>
 
           <div className="form-group">
-            <label>Password</label>
-            <input
+            <Label htmlFor="login-password">Password</Label>
+            <Input
+              id="login-password"
               type="password"
               placeholder="Enter your password"
               value={password}
@@ -57,9 +65,9 @@ function Login() {
 
           {error && <p className="error-message">{error}</p>}
 
-          <button type="submit" className="login-button">
+          <Button type="submit" className="login-button">
             Login
-          </button>
+          </Button>
         </form>
 
         

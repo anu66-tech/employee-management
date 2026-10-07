@@ -1,7 +1,18 @@
 import { useState } from "react";
-import { ArrowUpRight, Download, Search } from "lucide-react";
+import { ArrowUpRight, Download, Ellipsis, Eye, Pencil, Search, Trash2 } from "lucide-react";
 import { Link, useOutletContext, useSearchParams } from "react-router-dom";
 import { downloadEmployeesCsv } from "./employeeUtils.js";
+import { Badge } from "../components/ui/badge.jsx";
+import { Button } from "../components/ui/button.jsx";
+import { Input } from "../components/ui/input.jsx";
+import { Select } from "../components/ui/select.jsx";
+import { Table, TableBody, TableHeader, TableRow } from "../components/ui/table.jsx";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog.jsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs.jsx";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "../components/ui/dropdown-menu.jsx";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../components/ui/alert-dialog.jsx";
+import { Tooltip } from "../components/ui/tooltip.jsx";
+import { formatDate } from "./employeeUtils.js";
 
 const PAGE_SIZE = 10;
 const SORT_OPTIONS = {
@@ -22,7 +33,7 @@ const SORT_OPTIONS = {
 };
 
 export default function EmployeeList() {
-  const { employees = [], isLoading } = useOutletContext();
+  const { employees = [], deleteEmployee } = useOutletContext();
   const [searchParams] = useSearchParams();
 
   const [query, setQuery] = useState("");
@@ -124,22 +135,6 @@ export default function EmployeeList() {
     : 0;
   const lastEmployee = Math.min(currentPage * PAGE_SIZE, filtered.length);
 
-  if (isLoading) {
-    return (
-      <div className="employee-list-page">
-        <div className="page-heading">
-          <div>
-            <p className="eyebrow">PEOPLE OPERATIONS</p>
-            <h1>Employees</h1>
-          </div>
-        </div>
-        <section className="panel loading-state" role="status">
-          Loading employees...
-        </section>
-      </div>
-    );
-  }
-
   return (
     <div className="employee-list-page">
 
@@ -151,13 +146,12 @@ export default function EmployeeList() {
         </div>
 
         <div className="employee-actions">
-          <button
-            type="button"
-            className="button secondary"
+          <Button
+            variant="outline"
             onClick={() => downloadEmployeesCsv(employees)}
           >
             <Download size={10} />Export CSV
-          </button>
+          </Button>
           <Link
             to="/employees/add"
             className="button primary"
@@ -177,7 +171,7 @@ export default function EmployeeList() {
           <label className="search-box">
             <Search size={17} />
 
-            <input
+            <Input
               type="text"
               value={query}
               onChange={(event) => {
@@ -192,7 +186,7 @@ export default function EmployeeList() {
           {/* SORT ORDER */}
           <label className="department-select">
             <span className="sr-only">Sort employees</span>
-            <select
+            <Select
               value={sortOrder}
               onChange={(event) => {
                 setSortOrder(event.target.value);
@@ -215,7 +209,7 @@ export default function EmployeeList() {
               <option value="salaryDesc">Salary High → Low</option>
               <option value="dateAsc">Joining Date Old → New</option>
               <option value="dateDesc">Joining Date New → Old</option>
-            </select>
+            </Select>
           </label>
 
           {/* DEPARTMENT FILTER */}
@@ -224,7 +218,7 @@ export default function EmployeeList() {
               Filter department
             </span>
 
-            <select
+            <Select
               value={department}
               onChange={(event) => {
                 setDepartment(event.target.value)
@@ -240,7 +234,7 @@ export default function EmployeeList() {
                   {item}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
 
         </div>
@@ -248,24 +242,29 @@ export default function EmployeeList() {
         {/* EMPLOYEE TABLE */}
         <div className="table-scroll">
 
-          <table className="employee-table">
+          <Table className="employee-table">
 
-            <thead>
-              <tr>
+            <TableHeader>
+              <TableRow>
                 {renderSortableHeader("ID", "id")}
                 {renderSortableHeader("Name", "name")}
                 {renderSortableHeader("Email", "email")}
-                {renderSortableHeader("Department", "department")}
+                <th>Phone</th>
+                <th>Designation</th>
+                <th>Department</th>
+                <th>Location</th>
+                {renderSortableHeader("Joining date", "startDate")}
+                <th>Salary</th>
                 {renderSortableHeader("Status", "status")}
-                <th>View</th>
-              </tr>
-            </thead>
+                <th>Actions</th>
+              </TableRow>
+            </TableHeader>
 
-            <tbody>
+            <TableBody>
 
               {pageEmployees.map((employee) => (
 
-                <tr key={employee.id}>
+                <TableRow key={employee.id}>
 
                   {/* ID */}
                   <td>
@@ -289,22 +288,28 @@ export default function EmployeeList() {
                     {employee.email || "—"}
                   </td>
 
+                  <td>{employee.phone || "—"}</td>
+                  <td><Badge variant="outline">{employee.role || "—"}</Badge></td>
+
                   {/* DEPARTMENT */}
-                  <td>
-                    {employee.department || "—"}
-                  </td>
+                  <td><Badge variant="secondary">{employee.department || "—"}</Badge></td>
+
+                  <td>{employee.location || "—"}</td>
+                  <td>{formatDate(employee.startDate)}</td>
+                  <td>{employee.salary || "—"}</td>
 
 
                   {/* STATUS */}
                   <td>
                     {employee.status ? (
-                      <span
+                      <Badge
+                        variant={employee.status.toLowerCase() === "active" ? "success" : employee.status.toLowerCase().includes("leave") ? "warning" : "secondary"}
                         className={`status ${employee.status
                           .toLowerCase()
                           .replace(/\s+/g, "-")}`}
                       >
                         {employee.status}
-                      </span>
+                      </Badge>
                     ) : (
                       "—"
                     )}
@@ -312,25 +317,15 @@ export default function EmployeeList() {
 
                 
 
-                  {/* VIEW */}
-                  <td>
-                    <Link
-                      className="open-link"
-                      to={`/employees/${employee.id}`}
-                      aria-label={`View ${employee.name}`}
-                      title={`View ${employee.name}`}
-                    >
-                      <ArrowUpRight size={17} />
-                    </Link>
-                  </td>
+                  <td className="employee-row-actions"><EmployeeActions employee={employee} onDelete={deleteEmployee} /><EmployeeDetailsDialog employee={employee} /></td>
 
-                </tr>
+                </TableRow>
 
               ))}
 
-            </tbody>
+            </TableBody>
 
-          </table>
+          </Table>
 
         </div>
 
@@ -351,37 +346,37 @@ export default function EmployeeList() {
         </div>
 
         <nav className="pagination" aria-label="Employee list pages">
-          <button
-            type="button"
+          <Button
+            variant="outline"
             className="pagination-button"
             onClick={() => setPage(currentPage - 1)}
             disabled={currentPage === 1}
           >
             Previous
-          </button>
+          </Button>
 
           {Array.from({ length: pageCount }, (_, index) => index + 1).map(
             (pageNumber) => (
-              <button
+              <Button
                 key={pageNumber}
-                type="button"
+                variant="outline"
                 className="pagination-button"
                 onClick={() => setPage(pageNumber)}
                 aria-current={currentPage === pageNumber ? "page" : undefined}
               >
                 {pageNumber}
-              </button>
+              </Button>
             )
           )}
 
-          <button
-            type="button"
+          <Button
+            variant="outline"
             className="pagination-button"
             onClick={() => setPage(currentPage + 1)}
             disabled={currentPage === pageCount}
           >
             Next
-          </button>
+          </Button>
         </nav>
 
       </section>
@@ -412,4 +407,57 @@ function getSortValue(employee, field) {
   }
 
   return null;
+}
+
+function EmployeeDetailsDialog({ employee }) {
+  const personal = [
+    ["Full name", employee.name], ["Email", employee.email], ["Phone", employee.phone], ["Location", employee.location],
+  ];
+  const employment = [
+    ["Employee ID", employee.id], ["Designation", employee.role], ["Department", employee.department],
+    ["Employment status", employee.status], ["Joining date", formatDate(employee.startDate)], ["Salary", employee.salary],
+  ];
+  return <Dialog>
+    <Tooltip content={`View details for ${employee.name}`}>
+      <DialogTrigger asChild><Button variant="ghost" size="icon-sm" aria-label={`View details for ${employee.name}`}><Eye size={16} /></Button></DialogTrigger>
+    </Tooltip>
+    <DialogContent className="employee-details-dialog">
+      <DialogHeader><DialogTitle>{employee.name}</DialogTitle><DialogDescription>Complete employee record · {employee.id}</DialogDescription></DialogHeader>
+      <Tabs defaultValue="personal" className="employee-detail-tabs">
+        <TabsList><TabsTrigger value="personal">Personal information</TabsTrigger><TabsTrigger value="employment">Employment information</TabsTrigger></TabsList>
+        <TabsContent value="personal"><div className="employee-detail-fields">{personal.map(([label, value]) => <DetailField key={label} label={label} value={value} />)}</div></TabsContent>
+        <TabsContent value="employment"><div className="employee-detail-fields">{employment.map(([label, value]) => <DetailField key={label} label={label} value={value} />)}</div></TabsContent>
+      </Tabs>
+    </DialogContent>
+  </Dialog>
+}
+
+function DetailField({ label, value }) {
+  return <div className="employee-detail-field"><span>{label}</span><strong>{value || "Not provided"}</strong></div>
+}
+
+function EmployeeActions({ employee, onDelete }) {
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  return <>
+    <DropdownMenu>
+      <Tooltip content={`More actions for ${employee.name}`}>
+        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon-sm" aria-label={`More actions for ${employee.name}`}><Ellipsis size={17} /></Button></DropdownMenuTrigger>
+      </Tooltip>
+      <DropdownMenuContent>
+        <DropdownMenuItem as={Link} to={`/employees/${employee.id}`}><ArrowUpRight size={14} />Open profile</DropdownMenuItem>
+        <DropdownMenuItem as={Link} to={`/employees/edit/${employee.id}`}><Pencil size={14} />Edit employee</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="ui-dropdown-destructive" onClick={() => setConfirmOpen(true)}><Trash2 size={14} />Delete employee</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+    <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader><AlertDialogTitle>Delete {employee.name}?</AlertDialogTitle><AlertDialogDescription>This will remove this employee from your directory. This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="button secondary">Cancel</AlertDialogCancel>
+          <AlertDialogAction className="button danger" onClick={() => onDelete(employee.id)}>Delete employee</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
 }

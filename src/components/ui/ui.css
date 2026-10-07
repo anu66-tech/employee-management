@@ -1,0 +1,13 @@
+.ui-input,.ui-select{min-height:37px;padding:0 10px;color:#2c4039;border:1px solid #dfe7e1;border-radius:6px;outline:none;background:#fff;font-size:12px}.ui-input:focus,.ui-select:focus{border-color:#7fad96;box-shadow:0 0 0 3px #43886613}
+.ui-label{display:grid;gap:6px;color:#586a60;font-size:11px;font-weight:600}
+.ui-card{padding:18px}.ui-card-header{margin-bottom:14px}.ui-card-title{margin:0;color:#2c4039;font-size:15px;font-weight:700}
+.ui-card-description{margin-top:4px;color:#8a9791;font-size:11px}
+.ui-card-content{color:#45584e}.ui-card-footer{display:flex;align-items:center;gap:8px;margin-top:16px}
+.badge{display:inline-flex;align-items:center;border:1px solid transparent;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:600;line-height:1.2}.badge-default{background:#e9f3eb;color:#32734a}.badge-secondary{background:#eff1ef;color:#65756d}
+.badge-destructive{background:#fbeceb;color:#a04e43}.badge-outline{border-color:#dce5df;background:#fff;color:#486058}.badge-success{background:#edf6ee;color:#4a7a61}
+.badge-warning{background:#fcf3df;color:#98703d}.ui-table-container{width:100%;overflow-x:auto}
+.ui-table{width:100%;border-collapse:collapse;text-align:left}.ui-table-header{background:#f8faf8}
+.ui-table-head{height:37px;padding:0 12px;border-block:1px solid #edf1ee;color:#95a199;font-size:9px;letter-spacing:.7px;white-space:nowrap}
+.ui-table-cell{height:55px;padding:0 12px;border-bottom:1px solid #f0f2f0;color:#65756d;font-size:11px}.ui-table-row:hover{background:#fafcfb}.ui-dialog-overlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:#14251e66}
+.ui-dialog-content{width:min(100%,480px);max-height:calc(100vh - 40px);overflow:auto;padding:22px;border:1px solid #e4ebe6;border-radius:10px;background:#fff;box-shadow:0 20px 60px #14251e30}.ui-dialog-header{display:grid;gap:6px}
+.ui-dialog-title{margin:0;color:#263b36;font-size:18px;font-weight:700}.ui-dialog-description{color:#829087;font-size:12px}.ui-dialog-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.dialog-trigger{display:inline-flex}
